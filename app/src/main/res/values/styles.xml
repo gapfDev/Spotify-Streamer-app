@@ -23,7 +23,7 @@
         <item name="android:layout_marginBottom">@dimen/marginType16</item>
         <item name="android:layout_marginLeft">@dimen/marginType24</item>
         <item name="android:layout_marginRight">@dimen/marginType24</item>
-        <item name="android:background">#cccccc</item>
+        <item name="android:background">@color/accent</item>
     </style>
 
 
