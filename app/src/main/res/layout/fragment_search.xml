@@ -1,0 +1,39 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.alxdev.spotifystreamerapp.views.fragment.SearchFragment">
+
+    <EditText
+        android:id="@+id/editText_search_fragmentSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:ems="10"
+        android:hint="@string/search_artist"
+        android:imeOptions="actionGo"
+        android:inputType="textPersonName" />
+
+
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView_search_fragmentSearch"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/editText_search_fragmentSearch"
+        android:scrollbars="vertical" />
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar_load_search"
+        android:visibility="gone"
+       android:layout_centerInParent="true"
+        />
+
+
+</RelativeLayout>
