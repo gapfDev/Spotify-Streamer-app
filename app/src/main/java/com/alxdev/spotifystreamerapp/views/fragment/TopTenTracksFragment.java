@@ -163,7 +163,5 @@ public class TopTenTracksFragment extends android.support.v4.app.Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
-//        outState.putParcelable();
     }
 }
