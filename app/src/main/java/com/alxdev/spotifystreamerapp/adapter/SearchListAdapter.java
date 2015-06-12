@@ -10,24 +10,28 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alxdev.spotifystreamerapp.R;
+import com.alxdev.spotifystreamerapp.model.ArtistItem;
+import com.alxdev.spotifystreamerapp.model.Constants;
 import com.alxdev.spotifystreamerapp.rxbus.RxBus;
 import com.alxdev.spotifystreamerapp.views.activity.MainActivity;
 import com.squareup.picasso.Picasso;
+
+import java.util.List;
 
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
 
 public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.MyViewHolder> {
 
-    private ArtistsPager mArtistsPagers;
+    private List<ArtistItem> mArtistsPagers;
     private Context mContext;
     private LayoutInflater mLayoutInflater;
     private RxBus mRxBus;
 
-    public SearchListAdapter(ArtistsPager artistsPager, Activity activity) {
+    public SearchListAdapter(List<ArtistItem> artistsPager, Activity activity) {
         mArtistsPagers = artistsPager;
-        this.mContext = activity.getApplicationContext();
-        this.mLayoutInflater = LayoutInflater.from(mContext);
+        mContext = activity.getApplicationContext();
+        mLayoutInflater = LayoutInflater.from(mContext);
 
         mRxBus = ((MainActivity) activity).getRxBusSingleton();
     }
@@ -41,19 +45,17 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.My
 
     @Override
     public void onBindViewHolder(MyViewHolder viewHolder, int i) {
-        Artist artist = mArtistsPagers.artists.items.get(i);
-        viewHolder.mTextViewArtistListItem.setText(artist.name);
+        ArtistItem artist = mArtistsPagers.get(i);
+        viewHolder.mTextViewArtistListItem.setText(artist.getName());
 
-            if (artist.images.size() >= 2){
-                Picasso.with(mContext).load(artist.images.get(0).url).into(viewHolder.mImageViewArtistListItem);
+            if (artist.getThumbnailURL()!= Constants.IMAGE_DEFAULT){
+                Picasso.with(mContext).load(artist.getThumbnailURL()).into(viewHolder.mImageViewArtistListItem);
             }
-
-
     }
 
     @Override
     public int getItemCount() {
-        return mArtistsPagers.artists.items.size();
+        return mArtistsPagers.size();
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -74,8 +76,8 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.My
         @Override
         public void onClick(View v) {
             if (mRxBus.hasObservers()) {
-                String id = mArtistsPagers.artists.items.get(getLayoutPosition()).id;
-                String name = mArtistsPagers.artists.items.get(getLayoutPosition()).name;
+                String id = mArtistsPagers.get(getLayoutPosition()).getSpotifyId();
+                String name = mArtistsPagers.get(getLayoutPosition()).getName();
                 mRxBus.send(new MainActivity.clickOnSearchItem(id, name));
             }
         }

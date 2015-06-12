@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import com.alxdev.spotifystreamerapp.R;
+import com.alxdev.spotifystreamerapp.model.Constants;
 import com.alxdev.spotifystreamerapp.rxbus.RxBus;
 import com.alxdev.spotifystreamerapp.views.fragment.SearchFragment;
 
@@ -16,10 +17,7 @@ import rx.functions.Action1;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int FRAGMENT_CONTAINER = R.id.frameLayout_container_activityMain;
-    private static final String TAG_SEARCH_FRAGMENT = "searchFragment";
-    public static final String ARTIST_ID = "artistId";
-    public static final String ARTIST_NAME = "artistName";
+
     private RxBus mRxBus;
     private Toolbar mToolBar;
     private Subscription mSubscription;
@@ -33,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             FragmentTransaction fragmentManager = getSupportFragmentManager().beginTransaction();
-            fragmentManager.add(FRAGMENT_CONTAINER, SearchFragment.getInstance(), TAG_SEARCH_FRAGMENT);
+            fragmentManager.add(Constants.FRAGMENT_CONTAINER, SearchFragment.getInstance(), Constants.TAG_SEARCH_FRAGMENT);
             fragmentManager.commit();
         }
 
@@ -85,16 +83,13 @@ public class MainActivity extends AppCompatActivity {
                     public void call(Object o) {
 
                         if (o.getClass().getName() == clickOnSearchItem.class.getName()) {
-
                             clickOnSearchItem clickOnSearchItem = (MainActivity.clickOnSearchItem) o;
                             Intent intent = new Intent(getApplicationContext(), TopTenTracksActivity.class);
-                            intent.putExtra(ARTIST_ID, clickOnSearchItem.getmIdArtist());
-                            intent.putExtra(ARTIST_NAME, clickOnSearchItem.getmName());
+                            intent.putExtra(Constants.ARTIST_ID, clickOnSearchItem.getmIdArtist());
+                            intent.putExtra(Constants.ARTIST_NAME, clickOnSearchItem.getmName());
                             startActivity(intent);
 
-
                         }
-
                     }
                 });
     }

@@ -9,12 +9,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.alxdev.spotifystreamerapp.R;
+import com.alxdev.spotifystreamerapp.model.Constants;
 import com.alxdev.spotifystreamerapp.views.fragment.TopTenTracksFragment;
 
 public class TopTenTracksActivity extends AppCompatActivity {
 
-    private static final int FRAGMENT_CONTAINER = R.id.frameLayout_container_activityTopTen;
-    private static final String TAG_TOP_TEN = "topTen";
     private Toolbar mToolBar;
 
     @Override
@@ -23,23 +22,23 @@ public class TopTenTracksActivity extends AppCompatActivity {
         setContentView(R.layout.activity_top_ten_tracks);
 
         Intent intent = getIntent();
-        String artistId = intent.getStringExtra(MainActivity.ARTIST_ID);
-        String artistName = intent.getStringExtra(MainActivity.ARTIST_NAME);
+        String artistId = intent.getStringExtra(Constants.ARTIST_ID);
+        String artistName = intent.getStringExtra(Constants.ARTIST_NAME);
 
         setUpToolBar(artistName);
 
         if (savedInstanceState == null) {
             FragmentTransaction fragmentManager = getSupportFragmentManager().beginTransaction();
-            fragmentManager.add(FRAGMENT_CONTAINER, TopTenTracksFragment.getInstance(artistId), TAG_TOP_TEN);
+            fragmentManager.add(Constants.FRAGMENT_CONTAINER_ACTIVITY_TOP_TEN, TopTenTracksFragment.getInstance(artistId), Constants.TAG_TOP_TEN);
             fragmentManager.commit();
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        onBackPressed();
-        return true;
-    }
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            onBackPressed();
+            return true;
+        }
 
 
     public void setUpToolBar(String subTitle) {

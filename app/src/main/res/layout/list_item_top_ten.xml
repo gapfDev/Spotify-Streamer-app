@@ -8,8 +8,8 @@
     <ImageView
         android:id="@+id/imageView_album_itemTopTen"
         style="@style/imageMarginNormal"
-        android:layout_width="100dp"
-        android:layout_height="100dp" />
+        android:layout_width="@dimen/images_dimension"
+        android:layout_height="@dimen/images_dimension"/>
 
 
     <LinearLayout

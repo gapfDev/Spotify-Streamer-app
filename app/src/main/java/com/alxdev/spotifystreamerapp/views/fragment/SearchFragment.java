@@ -3,6 +3,7 @@ package com.alxdev.spotifystreamerapp.views.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -20,10 +21,17 @@ import android.widget.TextView;
 
 import com.alxdev.spotifystreamerapp.R;
 import com.alxdev.spotifystreamerapp.adapter.SearchListAdapter;
+import com.alxdev.spotifystreamerapp.model.ArtistItem;
+import com.alxdev.spotifystreamerapp.model.Constants;
 import com.alxdev.spotifystreamerapp.views.DividerItemDecoration;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Artist;
+import kaaes.spotify.webapi.android.models.Artists;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -37,11 +45,11 @@ import rx.schedulers.Schedulers;
 
 public class SearchFragment extends Fragment {
 
-    private static final String ARTIST_NAME = "artistName";
     private RecyclerView mRecyclerViewSearch;
     private SearchListAdapter mSearchListAdapter;
     private ProgressBar mProgressBar;
     private EditText mEditTextSearch;
+    private ArrayList<ArtistItem> mArtistList;
 
     public static SearchFragment getInstance() {
         SearchFragment fragment = new SearchFragment();
@@ -58,21 +66,27 @@ public class SearchFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_search, container, false);
+        View view = inflater.inflate(R.layout.fragment_search, container, false);
+
+        if (savedInstanceState != null){
+            mArtistList = savedInstanceState.getParcelableArrayList(Constants.ARTIST_OBJECT);
+        }
+
+        return view;
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-
         mProgressBar = (ProgressBar) getView().findViewById(R.id.progressBar_load_search);
+
         setUpRecycleView();
 
         if (savedInstanceState != null) {
-            String artistName = savedInstanceState.getString(ARTIST_NAME);
-            if (artistName != null && artistName.length() > 0) {
-                searchArtists(artistName);
+
+            if (mArtistList != null && mArtistList.size() > 0) {
+                setUpList(mArtistList);
             }
 
         }
@@ -102,11 +116,11 @@ public class SearchFragment extends Fragment {
 
     }
 
-    public Observable<ArtistsPager> getObservableApi(final String name) {
+    public Observable<List<ArtistItem>> getObservableApi(final String name) {
 
-        return Observable.create(new Observable.OnSubscribe<ArtistsPager>() {
+        return Observable.create(new Observable.OnSubscribe<List<ArtistItem>>() {
             @Override
-            public void call(final Subscriber<? super ArtistsPager> subscriber) {
+            public void call(final Subscriber<? super List<ArtistItem>> subscriber) {
 
                 SpotifyApi spotifyApi = new SpotifyApi();
                 SpotifyService spotifyService = spotifyApi.getService();
@@ -114,7 +128,15 @@ public class SearchFragment extends Fragment {
                 spotifyService.searchArtists(name, new Callback<ArtistsPager>() {
                     @Override
                     public void success(ArtistsPager artistsPager, Response response) {
-                        subscriber.onNext(artistsPager);
+
+                        List<Artist> artists = artistsPager.artists.items;
+                        mArtistList = new ArrayList<ArtistItem>();
+
+                        for (Artist artistData : artists) {
+                            ArtistItem artistItem = new ArtistItem(artistData);
+                            mArtistList.add(artistItem);
+                        }
+                        subscriber.onNext(mArtistList);
                     }
 
                     @Override
@@ -129,8 +151,8 @@ public class SearchFragment extends Fragment {
 
     }
 
-    public Observer<? super ArtistsPager> getObserverApiResult() {
-        return new Observer<ArtistsPager>() {
+    public Observer<? super List<ArtistItem>> getObserverApiResult() {
+        return new Observer<List<ArtistItem>>() {
 
             @Override
             public void onCompleted() {
@@ -143,11 +165,11 @@ public class SearchFragment extends Fragment {
             }
 
             @Override
-            public void onNext(ArtistsPager artistsPager) {
-                if (artistsPager != null) {
+            public void onNext(List<ArtistItem> artistItem) {
+                if (artistItem != null) {
 
-                    if (artistsPager.artists.items.size() > 0) {
-                        setUpList(artistsPager);
+                    if (mArtistList.size() > 0) {
+                        setUpList(artistItem);
                     } else {
                         showMessage();
                     }
@@ -162,8 +184,8 @@ public class SearchFragment extends Fragment {
         };
     }
 
-    public void setUpList(ArtistsPager artistsPager) {
-        mSearchListAdapter = new SearchListAdapter(artistsPager, getActivity());
+    public void setUpList(List<ArtistItem> artistItems) {
+        mSearchListAdapter = new SearchListAdapter(artistItems, getActivity());
         mRecyclerViewSearch.setAdapter(mSearchListAdapter);
     }
 
@@ -192,8 +214,8 @@ public class SearchFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        if (mEditTextSearch.getText().length() > 0) {
-            outState.putString(ARTIST_NAME, mEditTextSearch.getText().toString());
+        if(outState != null){
+            outState.putParcelableArrayList(Constants.ARTIST_OBJECT, mArtistList);
         }
 
     }

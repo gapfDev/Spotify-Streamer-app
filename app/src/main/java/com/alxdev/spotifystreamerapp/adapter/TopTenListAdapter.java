@@ -1,7 +1,9 @@
 package com.alxdev.spotifystreamerapp.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,20 +11,27 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alxdev.spotifystreamerapp.R;
+import com.alxdev.spotifystreamerapp.model.Constants;
+import com.alxdev.spotifystreamerapp.model.TopTenItem;
 import com.squareup.picasso.Picasso;
 
-import kaaes.spotify.webapi.android.models.Track;
-import kaaes.spotify.webapi.android.models.Tracks;
+import java.util.List;
 
 public class TopTenListAdapter extends RecyclerView.Adapter<TopTenListAdapter.MyViewHolder> {
-    private Tracks mTracks;
+    private List<TopTenItem> mTopTenItems;
     private Context mContext;
     private LayoutInflater mLayoutInflater;
 
-    public TopTenListAdapter(Tracks tracks, Context context) {
-        mTracks = tracks;
-        this.mContext = context;
-        mLayoutInflater = LayoutInflater.from(context);
+    public TopTenListAdapter(List<TopTenItem> topTenItems, Activity activity) {
+
+        try {
+            mTopTenItems = topTenItems;
+            mContext = activity.getApplicationContext();
+            mLayoutInflater = LayoutInflater.from(mContext);
+        }catch (Exception e){
+            Log.d("----------", e.getMessage());
+        }
+
     }
 
     @Override
@@ -35,19 +44,20 @@ public class TopTenListAdapter extends RecyclerView.Adapter<TopTenListAdapter.My
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
 
-        Track track = mTracks.tracks.get(position);
-        holder.mTextView_album.setText(track.album.name);
-        holder.mTextView_track.setText(track.name);
+        TopTenItem topTenItem = mTopTenItems.get(position);
+        holder.mTextView_album.setText(topTenItem.getmAlbumName());
+        holder.mTextView_track.setText(topTenItem.getmTrackName());
 
-        if (track.album.images.size() >= 2) {
-            Picasso.with(mContext).load(track.album.images.get(1).url).into(holder.mImageViewAlbum);
+        if (topTenItem.getmAlbumImage() != Constants.IMAGE_DEFAULT) {
+
+            Picasso.with(mContext).load(topTenItem.getmAlbumImage()).into(holder.mImageViewAlbum);
         }
 
     }
 
     @Override
     public int getItemCount() {
-        return mTracks.tracks.size();
+        return mTopTenItems.size();
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

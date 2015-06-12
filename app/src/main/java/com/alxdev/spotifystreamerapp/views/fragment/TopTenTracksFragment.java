@@ -7,20 +7,25 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.alxdev.spotifystreamerapp.R;
 import com.alxdev.spotifystreamerapp.adapter.TopTenListAdapter;
+import com.alxdev.spotifystreamerapp.model.Constants;
+import com.alxdev.spotifystreamerapp.model.TopTenItem;
 import com.alxdev.spotifystreamerapp.views.DividerItemDecoration;
-import com.alxdev.spotifystreamerapp.views.activity.MainActivity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -38,15 +43,15 @@ import rx.schedulers.Schedulers;
  */
 public class TopTenTracksFragment extends android.support.v4.app.Fragment {
 
-    private static final String COUNTRY = "country";
     private RecyclerView mRecyclerViewTopTen;
     private Subscription mSubscription;
     private String mCountry;
+    private ArrayList<TopTenItem> mTopTenItems;
 
     public static TopTenTracksFragment getInstance(String id) {
         TopTenTracksFragment fragment = new TopTenTracksFragment();
         Bundle bundle = new Bundle();
-        bundle.putString(MainActivity.ARTIST_ID, id);
+        bundle.putString(Constants.ARTIST_ID, id);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -61,7 +66,13 @@ public class TopTenTracksFragment extends android.support.v4.app.Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_top_ten_tracks, container, false);
+        View view = inflater.inflate(R.layout.fragment_top_ten_tracks, container, false);
+
+        if (savedInstanceState != null){
+            mTopTenItems = savedInstanceState.getParcelableArrayList(Constants.TOP_TEN_OBJECT);
+        }
+
+        return view;
     }
 
     @Override
@@ -71,7 +82,7 @@ public class TopTenTracksFragment extends android.support.v4.app.Fragment {
         setUpRecyclerView();
 
         Bundle bundle = getArguments();
-        String artistId = bundle.getString(MainActivity.ARTIST_ID);
+        String artistId = bundle.getString(Constants.ARTIST_ID);
 
         searchTopTen(mCountry, artistId);
     }
@@ -94,27 +105,37 @@ public class TopTenTracksFragment extends android.support.v4.app.Fragment {
 
     }
 
-    public void setUpList(Tracks tracks) {
-        TopTenListAdapter topTenAdapter = new TopTenListAdapter(tracks, getActivity().getApplicationContext());
-        mRecyclerViewTopTen.setAdapter(topTenAdapter);
+    public void setUpList(List<TopTenItem> topTenItems) {
+
+            TopTenListAdapter topTenAdapter = new TopTenListAdapter(topTenItems, getActivity());
+            mRecyclerViewTopTen.setAdapter(topTenAdapter);
+
+
     }
 
-    public Observable<Tracks> getObservableRequest(final String country, final String code) {
+    public Observable<List<TopTenItem>> getObservableRequest(final String country, final String code) {
 
         return Observable
-                .create(new Observable.OnSubscribe<Tracks>() {
+                .create(new Observable.OnSubscribe<List<TopTenItem>>() {
                     @Override
-                    public void call(final Subscriber<? super Tracks> subscriber) {
+                    public void call(final Subscriber<? super List<TopTenItem>> subscriber) {
 
                         SpotifyApi spotifyApi = new SpotifyApi();
                         SpotifyService spotifyService = spotifyApi.getService();
                         Map<String, Object> map = new HashMap<String, Object>();
-                        map.put(COUNTRY, mCountry);
+                        map.put(Constants.COUNTRY, mCountry);
 
                         spotifyService.getArtistTopTrack(code, map, new Callback<Tracks>() {
                             @Override
                             public void success(Tracks tracks, Response response) {
-                                subscriber.onNext(tracks);
+
+                                List<Track> trackList = tracks.tracks;
+                                mTopTenItems = new ArrayList<TopTenItem>();
+                                for (Track item : trackList) {
+                                    TopTenItem topTenItem = new TopTenItem(item);
+                                    mTopTenItems.add(topTenItem);
+                                }
+                                subscriber.onNext(mTopTenItems);
                             }
 
                             @Override
@@ -127,8 +148,8 @@ public class TopTenTracksFragment extends android.support.v4.app.Fragment {
                 });
     }
 
-    public Observer<? super Tracks> getObserverResult() {
-        return new Observer<Tracks>() {
+    public Observer<? super List<TopTenItem>> getObserverResult() {
+        return new Observer<List<TopTenItem>>() {
             @Override
             public void onCompleted() {
 
@@ -140,10 +161,10 @@ public class TopTenTracksFragment extends android.support.v4.app.Fragment {
             }
 
             @Override
-            public void onNext(Tracks tracks) {
-                if (tracks != null) {
-                    if (tracks.tracks.size() > 0) {
-                        setUpList(tracks);
+            public void onNext(List<TopTenItem> topTenItems) {
+                if (topTenItems != null) {
+                    if (topTenItems.size() > 0) {
+                        setUpList(topTenItems);
                     } else {
                         showMessage();
                     }
@@ -163,5 +184,6 @@ public class TopTenTracksFragment extends android.support.v4.app.Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(Constants.TOP_TEN_OBJECT, mTopTenItems);
     }
 }

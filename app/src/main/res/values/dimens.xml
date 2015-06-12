@@ -5,4 +5,5 @@
     <dimen name="marginType8">8dp</dimen>
     <dimen name="marginType16">16dp</dimen>
     <dimen name="marginType24">24dp</dimen>
+    <dimen name="images_dimension">100dp</dimen>
 </resources>
